@@ -30,12 +30,6 @@ docker pull redis:7-alpine    # HIT — served from disk, zero Hub traffic
 ```
 
 
-> **Getting the binary/image today:**
-> - **Build from source** (proven path this is how the reference deployment was built): `docker build -t stashd .`  static musl binary in a `FROM scratch` image, then `docker run -d -p 5000:5000 -v stashd:/var/lib/stashd stashd`. The image needs no config file: defaults are Hub + GHCR upstreams, `listen 0.0.0.0:5000`, cache at `/var/lib/stashd` (match the volume).
-> - **CI artifact** (no build machine needed): download `stashd-linux-amd64` from the latest green `musl-release` job a static binary, no runtime deps and `./stashd-linux-amd64 serve --config stashd.yaml`.
-> - **Published registry image** (`ghcr.io/...`) activates on GitHub migration.
-
-
 ## How it works
 
 - **Manifests** are small (KBs): stored in SQLite (`{cache_dir}/stashd.db`, WAL), keyed by `(upstream, repo, reference)` they survive restarts. Digest refs are immutable (cache forever); tag refs revalidate against upstream via HEAD + `Docker-Content-Digest` compare after a short TTL.
